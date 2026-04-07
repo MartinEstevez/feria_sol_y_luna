@@ -2,7 +2,7 @@ import { useState } from 'react';
 import UploadForm from './components/UploadForm';
 import SearchView from './components/SearchView';
 import FeriaForm from './components/FeriaForm'; // El componente nuevo
-import logo from './assets/logo.png'; // Revisá que la ruta de tu logo sea correcta
+import logo from './feria-logo.png'; // Revisá que la ruta de tu logo sea correcta
 
 function App() {
   const [activeTab, setActiveTab] = useState('upload');

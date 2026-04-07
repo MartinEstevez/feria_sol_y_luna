@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 // URL DEFINITIVA
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxKdyp2Hvi49m-niRze89wiGdW8vo8dgSktrtIamECgACCO4oq2cv_wCSKwGiF0Ay9wCg/exec"; 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxBgYBdMd4uIU5ee0TbNZWH0Pd8cdSrZS07x_xNu21EI8D8CS67KEV-GlZSyLsxSeaHSQ/exec"; 
 
 const formatCurrency = (val) => {
   if (!val) return '';
