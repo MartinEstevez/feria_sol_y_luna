@@ -5,7 +5,12 @@
   --bg-card: #FFFFFF;
   --texto-principal: #3A312B;
   --texto-secundario: #8C827A;
-  --terracota: #C58361;
+  --terracota: #C58361; 
+  /* LA GAMA DE LILAS */
+  --lila: #A28CB0; 
+  --lila-oscuro: #8B7798; 
+  --lila-claro: #EBE5F0; /* Para filas seleccionadas */
+  --lila-muy-claro: #F5F1F8; /* Para efectos hover y fondos suaves */
   --arena: #EAE0D5;
   --salvia: #8E9B8A;
   --mostaza: #D8B06A;
@@ -22,6 +27,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* BARRA DE DESPLAZAMIENTO (SCROLLBAR) EN LILA */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-tiza); }
+::-webkit-scrollbar-thumb { background: var(--lila); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--lila-oscuro); }
+
 .app-container {
   max-width: 1100px;
   margin: 0 auto;
@@ -37,15 +48,9 @@ body {
 }
 
 .app-logo {
-  max-height: 90px;
-}
-
-.app-title {
-  font-family: var(--font-title);
-  color: var(--terracota);
-  font-size: 32px;
-  margin-top: 10px;
-  font-style: italic;
+  max-height: 160px;
+  width: auto;
+  margin-bottom: 10px;
 }
 
 .tab-menu {
@@ -72,11 +77,17 @@ body {
   text-align: center;
 }
 
+/* EFECTO LILA AL PASAR EL MOUSE POR LAS PESTAÑAS */
+.tab-menu button:hover {
+  background-color: var(--lila-muy-claro);
+  color: var(--lila-oscuro);
+}
+
 .tab-menu button.active {
   background-color: var(--bg-card);
-  color: var(--terracota);
-  border: 1px solid var(--arena);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  color: var(--lila);
+  border: 1px solid var(--lila-claro);
+  box-shadow: 0 4px 15px rgba(162, 140, 176, 0.15);
 }
 
 .main-content {
@@ -122,8 +133,8 @@ h2 {
 
 .search-input:focus {
   outline: none;
-  border-color: var(--terracota);
-  box-shadow: 0 0 0 3px rgba(197, 131, 97, 0.1);
+  border-color: var(--lila);
+  box-shadow: 0 0 0 3px rgba(162, 140, 176, 0.15);
 }
 
 .search-input::placeholder {
@@ -156,7 +167,7 @@ h2 {
   background-color: var(--bg-card);
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
+  transition: transform 0.2s, border-color 0.2s, background-color 0.2s;
 }
 
 .data-table tr:active {
@@ -206,15 +217,14 @@ h2 {
 .badge-success { background-color: rgba(142, 155, 138, 0.15); color: var(--salvia); }
 .badge-warning { background-color: rgba(216, 176, 106, 0.15); color: var(--mostaza); }
 
-/* --- NUEVO: FONDO OSCURO QUE CUBRE LA PANTALLA --- */
 .panel-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: rgba(58, 49, 43, 0.5); /* Color marrón oscuro semi-transparente */
-  backdrop-filter: blur(3px); /* Desenfoque elegante */
+  background-color: rgba(58, 49, 43, 0.5); 
+  backdrop-filter: blur(3px); 
   z-index: 9999;
   animation: fadeInOverlay 0.3s ease forwards;
 }
@@ -224,7 +234,6 @@ h2 {
   to { opacity: 1; }
 }
 
-/* --- PANEL LATERAL FLOTANTE --- */
 .details-panel { display: none; }
 
 .details-panel.open {
@@ -241,16 +250,16 @@ h2 {
   box-sizing: border-box;
   animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   overflow-y: auto;
-  box-shadow: -10px 0 40px rgba(0,0,0,0.15); /* Sombra intensa para separar del fondo */
+  box-shadow: -10px 0 40px rgba(0,0,0,0.15); 
 }
 
 .details-panel h3 {
   font-family: var(--font-title); 
-  color: var(--terracota);
+  color: var(--lila);
   font-size: 28px;
   margin-top: 0;
   margin-bottom: 30px;
-  border-bottom: 1px solid var(--arena);
+  border-bottom: 1px solid var(--lila-claro);
   padding-bottom: 20px;
 }
 
@@ -267,7 +276,7 @@ h2 {
   width: 20px;
   height: 20px;
   margin-right: 12px;
-  stroke: var(--terracota);
+  stroke: var(--lila);
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -288,8 +297,9 @@ h2 {
 }
 
 .details-panel button:hover {
-  background-color: var(--bg-tiza);
-  border-color: var(--texto-principal);
+  background-color: var(--lila-muy-claro);
+  border-color: var(--lila-oscuro);
+  color: var(--lila-oscuro);
 }
 
 .custom-form {
@@ -298,11 +308,12 @@ h2 {
   gap: 15px; 
 }
 
+/* LAS ETIQUETAS DE LOS FORMULARIOS AHORA SON LILAS */
 .form-group label {
   display: block;
-  color: var(--texto-secundario);
+  color: var(--lila-oscuro);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -326,8 +337,16 @@ h2 {
 
 .custom-form input:focus, .custom-form select:focus {
   outline: none;
-  border-color: var(--terracota);
+  border-color: var(--lila);
   background-color: var(--bg-card);
+}
+
+/* RADIO BUTTONS ESTILO LILA */
+input[type="radio"] {
+  accent-color: var(--lila);
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
 }
 
 .form-row {
@@ -338,7 +357,7 @@ h2 {
 .form-row .form-group { flex: 1; }
 
 .submit-btn {
-  background-color: var(--terracota);
+  background-color: var(--lila);
   color: white;
   border: none;
   padding: 16px;
@@ -351,7 +370,7 @@ h2 {
   transition: background-color 0.3s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.submit-btn:hover { background-color: #b57454; }
+.submit-btn:hover { background-color: var(--lila-oscuro); }
 .submit-btn:active { transform: translateY(2px) scale(0.98); }
 
 @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
@@ -390,17 +409,18 @@ h2 {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.checkbox-group input[type="checkbox"]:checked { background-color: var(--salvia); }
+.checkbox-group input[type="checkbox"]:checked { background-color: var(--lila); }
 .checkbox-group input[type="checkbox"]:checked::before { transform: translateX(20px); }
 
 /* AUTOCOMPLETADO ESTILOS */
 .autocomplete-wrapper {
   position: relative;
   margin-bottom: 30px;
-  background: var(--bg-tiza);
+  background: var(--bg-card); /* Más limpio */
   padding: 20px;
   border-radius: 12px;
-  border: 1px solid var(--arena);
+  border: 1px solid var(--lila-claro);
+  box-shadow: 0 4px 15px rgba(162, 140, 176, 0.05);
 }
 
 .autocomplete-dropdown {
@@ -409,9 +429,9 @@ h2 {
   left: 0;
   width: 100%;
   background: var(--bg-card);
-  border: 1px solid var(--arena);
+  border: 1px solid var(--lila-claro);
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(162, 140, 176, 0.15);
   z-index: 100;
   max-height: 220px;
   overflow-y: auto;
@@ -420,7 +440,7 @@ h2 {
 
 .autocomplete-item {
   padding: 12px 15px;
-  border-bottom: 1px solid var(--arena);
+  border-bottom: 1px solid var(--lila-claro);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -430,7 +450,7 @@ h2 {
 }
 
 .autocomplete-item:last-child { border-bottom: none; }
-.autocomplete-item:hover { background: var(--bg-tiza); color: var(--terracota); }
+.autocomplete-item:hover { background: var(--lila-muy-claro); color: var(--lila-oscuro); }
 
 /* POPUP TOAST ESTILOS */
 .toast-notification {
@@ -450,7 +470,7 @@ h2 {
 }
 
 .toast-notification.error {
-  border-left-color: var(--terracota);
+  border-left-color: #e74c3c;
 }
 
 .toast-message {
@@ -489,13 +509,13 @@ h2 {
   width: 90%;
   text-align: center;
   box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  border: 1px solid var(--arena);
+  border: 1px solid var(--lila-claro);
   animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-content h3 {
   font-family: var(--font-title);
-  color: var(--terracota);
+  color: var(--lila-oscuro);
   margin-bottom: 15px;
 }
 
@@ -526,7 +546,7 @@ h2 {
   flex: 1;
   background: var(--bg-tiza) !important;
   color: var(--texto-principal) !important;
-  border: 1px solid var(--arena) !important;
+  border: 1px solid var(--lila-claro) !important;
   padding: 12px !important;
   border-radius: 10px !important;
   cursor: pointer;
@@ -542,8 +562,10 @@ h2 {
    ========================================= */
 @media (min-width: 800px) {
   .app-container { max-width: 1300px; padding: 40px 20px; }
-  .app-header { margin-bottom: 50px; }
-  .app-title { font-size: 38px; }
+  .app-header { margin-bottom: 40px; }
+  
+  .app-logo { max-height: 220px; } 
+  
   .tab-menu { gap: 15px; width: auto; }
   .tab-menu button { padding: 12px 30px; font-size: 14px; flex: 0 1 auto; }
   
@@ -554,7 +576,6 @@ h2 {
 
   h2 { font-size: 26px; margin-bottom: 30px; }
 
-  /* LA TABLA AHORA OCUPA EL 100% SIEMPRE */
   .data-table { display: table; }
   .data-table thead { display: table-header-group; }
   .data-table tbody { display: table-row-group; }
@@ -562,21 +583,24 @@ h2 {
   
   .data-table td, .data-table th { display: table-cell; width: auto; text-align: left; padding: 15px 15px; }
   .data-table td::before { content: none; }
-  .data-table th { border-bottom: 2px solid var(--arena); color: var(--texto-secundario); font-size: 12px; }
+  
+  .data-table th { border-bottom: 2px solid var(--lila-claro); color: var(--texto-secundario); font-size: 12px; transition: color 0.2s;}
+  .data-table th:hover { color: var(--lila-oscuro); }
   
   .data-table td { border-bottom: 1px solid var(--arena); }
   .data-table td:last-child { border-bottom: 1px solid var(--arena); } 
 
-  .data-table tr:hover { background-color: var(--bg-tiza); transform: none; }
-  .data-table tr.selected td { background-color: #F4EFEB; } 
+  /* HOVER LILA EN LAS FILAS DE LA TABLA */
+  .data-table tr:hover { background-color: var(--lila-muy-claro); transform: none; }
+  /* FILA SELECCIONADA EN LILA */
+  .data-table tr.selected td { background-color: var(--lila-claro); } 
 
   .form-row { flex-direction: row; gap: 20px; }
   
-  /* PANEL LATERAL FIJO A LA DERECHA (TIPO DRAWER) */
   .details-panel.open { 
     width: 480px; 
     padding: 50px 40px; 
-    border-left: 1px solid var(--arena);
+    border-left: 1px solid var(--lila-claro);
   }
   
   .custom-form { gap: 20px; }

@@ -23,6 +23,8 @@ function SearchView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterFeria, setFilterFeria] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
+  const [filterOpcion, setFilterOpcion] = useState(''); 
+  const [filterGazebo, setFilterGazebo] = useState(''); 
   
   const [sortConfig, setSortConfig] = useState({ key: 'fecha_registro', direction: 'desc' });
 
@@ -148,7 +150,6 @@ function SearchView() {
     setSortConfig({ key, direction });
   };
 
-  // Función para cerrar el panel (usada al tocar el fondo oscuro o el botón cerrar)
   const closePanel = () => {
     setSelectedRow(null);
     setIsEditing(false);
@@ -156,6 +157,7 @@ function SearchView() {
 
   let processedData = data.filter(item => {
     const q = searchQuery.toLowerCase();
+    
     const matchGlobal = !q || 
       item.nombre_apellido?.toLowerCase().includes(q) || 
       item.codigo_interno?.toString().toLowerCase().includes(q) ||
@@ -168,7 +170,14 @@ function SearchView() {
       (filterEstado === 'PAGADO' && isPagado) || 
       (filterEstado === 'PENDIENTE' && !isPagado);
 
-    return matchGlobal && matchFeria && matchEstado;
+    const matchOpcion = !filterOpcion || item.opcion_elegida === filterOpcion;
+
+    const isGazebo = item.lleva_gazebo === 'Sí' || !!item.medida_gazebo;
+    const matchGazebo = !filterGazebo || 
+      (filterGazebo === 'SI' && isGazebo) || 
+      (filterGazebo === 'NO' && !isGazebo);
+
+    return matchGlobal && matchFeria && matchEstado && matchOpcion && matchGazebo;
   });
 
   if (sortConfig.key) {
@@ -207,26 +216,44 @@ function SearchView() {
         <h2>Tablero de Emprendedores</h2>
         
         <div className="filters-wrapper" style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          
           <input 
             type="text" 
             className="search-input"
             style={{ flex: '2 1 200px', marginBottom: 0 }}
-            placeholder="🔍 Buscar por nombre, código o rubro..." 
+            placeholder="Buscar por nombre, código o rubro..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          
           <select className="search-input" style={{ flex: '1 1 150px', marginBottom: 0, cursor: 'pointer' }} value={filterFeria} onChange={(e) => setFilterFeria(e.target.value)}>
-            <option value="">📍 Todas las Ferias</option>
+            <option value="">Todas las Ferias</option>
             {ferias.map((f, i) => {
               const stringFeria = f.fecha ? `${f.nombre_feria} (${new Date(f.fecha).toLocaleDateString('es-AR')})` : f.nombre_feria;
               return <option key={i} value={stringFeria}>{stringFeria}</option>
             })}
           </select>
-          <select className="search-input" style={{ flex: '1 1 150px', marginBottom: 0, cursor: 'pointer' }} value={filterEstado} onChange={(e) => setFilterEstado(e.target.value)}>
-            <option value="">💰 Todos los Estados</option>
+          
+          <select className="search-input" style={{ flex: '1 1 150px', marginBottom: 0, cursor: 'pointer' }} value={filterOpcion} onChange={(e) => setFilterOpcion(e.target.value)}>
+            <option value="">Todas las Opciones</option>
+            <option value="Tablón 2mts + 1 Silla">Tablón 2mts + 1 Silla</option>
+            <option value="1/2 Tablón + 1 Silla">1/2 Tablón + 1 Silla</option>
+            <option value="Espacio sin mesa/silla">Espacio sin mesa/silla</option>
+            <option value="Espacio hasta 2 percheros">Espacio hasta 2 percheros</option>
+          </select>
+          
+          <select className="search-input" style={{ flex: '1 1 130px', marginBottom: 0, cursor: 'pointer' }} value={filterGazebo} onChange={(e) => setFilterGazebo(e.target.value)}>
+            <option value="">Gazebo: Todos</option>
+            <option value="SI">Con Gazebo</option>
+            <option value="NO">Sin Gazebo</option>
+          </select>
+          
+          <select className="search-input" style={{ flex: '1 1 130px', marginBottom: 0, cursor: 'pointer' }} value={filterEstado} onChange={(e) => setFilterEstado(e.target.value)}>
+            <option value="">Todos los Estados</option>
             <option value="PAGADO">Solo Pagados</option>
             <option value="PENDIENTE">Solo Pendientes</option>
           </select>
+
         </div>
 
         {loading && !isEditing && !selectedRow ? (
@@ -244,6 +271,7 @@ function SearchView() {
                   <th onClick={() => requestSort('nombre_apellido')} style={{cursor: 'pointer'}}>Nombre {getSortIcon('nombre_apellido')}</th>
                   <th onClick={() => requestSort('rubro')} style={{cursor: 'pointer'}}>Rubro {getSortIcon('rubro')}</th>
                   <th onClick={() => requestSort('opcion_elegida')} style={{cursor: 'pointer'}}>Opción {getSortIcon('opcion_elegida')}</th>
+                  <th onClick={() => requestSort('lleva_gazebo')} style={{cursor: 'pointer'}}>Gazebo {getSortIcon('lleva_gazebo')}</th>
                   <th onClick={() => requestSort('valor_total')} style={{cursor: 'pointer'}}>Total {getSortIcon('valor_total')}</th>
                   <th onClick={() => requestSort('sena')} style={{cursor: 'pointer'}}>Seña {getSortIcon('sena')}</th>
                   <th onClick={() => requestSort('pago_completo')} style={{cursor: 'pointer'}}>Estado {getSortIcon('pago_completo')}</th>
@@ -254,12 +282,14 @@ function SearchView() {
                 {processedData.map((item, index) => (
                   <tr key={index} onClick={() => handleRowClick(item)} className={selectedRow?.row_index === item.row_index ? 'selected' : ''}>
                     <td data-label="Fecha">{formatDate(item.fecha_registro || item.Fecha)}</td>
-                    <td data-label="Feria" style={{fontWeight: 'bold', color: 'var(--terracota)'}}>{item.feria_asignada || '-'}</td>
+                    {/* LA FERIA AHORA APARECE EN LILA OSCURO */}
+                    <td data-label="Feria" style={{fontWeight: 'bold', color: 'var(--lila-oscuro)'}}>{item.feria_asignada || '-'}</td>
                     <td data-label="Cód.">{item.codigo_interno}</td>
                     <td data-label="Nombre" className="table-name">{item.nombre_apellido}</td>
                     <td data-label="Rubro">{item.rubro}</td>
-                    <td data-label="Opción" style={{fontSize: '12px'}}>
-                      {item.opcion_elegida} {item.lleva_gazebo === 'Sí' ? `(+ Gazebo ${item.medida_gazebo})` : ''}
+                    <td data-label="Opción" style={{fontSize: '12px'}}>{item.opcion_elegida}</td>
+                    <td data-label="Gazebo" style={{fontSize: '12px', fontWeight: 'bold'}}>
+                      {item.lleva_gazebo === 'Sí' || !!item.medida_gazebo ? (item.medida_gazebo || 'Sí') : 'No'}
                     </td>
                     <td data-label="Total">${Number(item.valor_total || 0).toLocaleString('es-AR')}</td>
                     <td data-label="Seña">${Number(item.sena || 0).toLocaleString('es-AR')}</td>
@@ -286,12 +316,10 @@ function SearchView() {
         )}
       </div>
 
-      {/* 👇 NUEVO: CAPA OSCURA QUE CUBRE TODA LA PANTALLA Y CIERRA EL PANEL AL TOCARLA 👇 */}
       {selectedRow && (
         <div className="panel-overlay" onClick={closePanel}></div>
       )}
 
-      {/* PANEL LATERAL (AHORA TOTALMENTE FLOTANTE A LA DERECHA) */}
       <div className={`details-panel ${selectedRow ? 'open' : ''}`}>
         <div className="details-panel-content">
           <h3 style={{ fontFamily: 'var(--font-title)' }}>
@@ -301,12 +329,15 @@ function SearchView() {
             <div className="edit-form">
               {!isEditing ? (
                 <>
-                  <p><strong>📍 Feria:</strong> {selectedRow.feria_asignada || '-'}</p>
-                  <p><strong>📅 Fecha de registro:</strong> {formatDate(selectedRow.fecha_registro || selectedRow.Fecha)}</p>
+                  <p><strong>Feria:</strong> {selectedRow.feria_asignada || '-'}</p>
+                  <p><strong>Fecha de registro:</strong> {formatDate(selectedRow.fecha_registro || selectedRow.Fecha)}</p>
                   <p>
                     <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} style={{width:'20px'}}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.25A2.25 2.25 0 010 18.75V6.25A2.25 2.25 0 012.25 4h19.5A2.25 2.25 0 0124 6.25v12.5a2.25 2.25 0 01-2.25 2.25h-6.75zM12 9a3.75 3.75 0 110-7.5 3.75 3.75 0 010 7.5z" /></svg>
-                    <span>Rubro: <strong>{selectedRow.rubro}</strong><br/>
-                    Opción: {selectedRow.opcion_elegida} {selectedRow.lleva_gazebo === 'Sí' ? ` + Gazebo (${selectedRow.medida_gazebo})` : ''}</span>
+                    <span>
+                      Rubro: <strong>{selectedRow.rubro}</strong><br/>
+                      Opción: <strong>{selectedRow.opcion_elegida}</strong><br/>
+                      Gazebo: <strong>{selectedRow.lleva_gazebo === 'Sí' || !!selectedRow.medida_gazebo ? (selectedRow.medida_gazebo || 'Sí') : 'No'}</strong>
+                    </span>
                   </p>
                   <p>
                     <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} style={{width:'20px'}}><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.003 9.003 0 008.367-5.55M12 21a9.003 9.003 0 01-8.367-5.55M12 21V8.25M12 8.25A1.5 1.5 0 0113.5 6.75h1.5A1.5 1.5 0 0116.5 8.25v11.25M12 8.25A1.5 1.5 0 0010.5 6.75h-1.5A1.5 1.5 0 007.5 8.25v11.25m4.5 11.25H3.75A2.25 2.25 0 011.5 18v-6.75M12 21h6.75a2.25 2.25 0 002.25-2.25v-6.75M3.75 21a1.5 1.5 0 011.5-1.5h1.5A1.5 1.5 0 018.25 21" /></svg>
@@ -365,7 +396,7 @@ function SearchView() {
                   <div className="form-group checkbox-group">
                      <label><input type="checkbox" name="pago_completo" checked={editData.pago_completo} onChange={handleEditChange} />Pago Completo</label>
                   </div>
-                  <button onClick={saveChanges} style={{ background: 'var(--terracota)', color: 'white' }}>GUARDAR CAMBIOS</button>
+                  <button onClick={saveChanges} style={{ background: 'var(--lila)', color: 'white' }}>GUARDAR CAMBIOS</button>
                   <button onClick={() => setIsEditing(false)} style={{ background: 'transparent', color: 'var(--texto-secundario)', border: '1px solid' }}>CANCELAR</button>
                 </div>
               )}

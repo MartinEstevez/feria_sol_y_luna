@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
-// PONÉ LA NUEVA URL DE GOOGLE ACÁ ABAJO 👇
-const GAS_URL = "https://script.google.com/macros/s/AKfycbz22ztztD5j7KDI5W21iiNxg-nYtH_NKtSnprw1PCRKOQdGKCBTa84sfq0cAJVsoIWvbg/exec"; 
+// 👉 ¡PONÉ TU LINK DE GOOGLE ACÁ!
+const GAS_URL = "https://script.google.com/macros/s/AKfycbz22ztztD5j7KDI5W21iiNxg-nYtH_NKtSnprw1PCRKOQdGKCBTa84sfq0cAJVsoIWvbg/exec";
 
 const formatCurrency = (val) => {
   if (!val) return '';
@@ -85,6 +85,7 @@ function UploadForm() {
   };
 
   const filteredVendors = pastVendors.filter(v => {
+    if (!searchTerm) return true; 
     const searchLower = searchTerm.toLowerCase();
     const matchName = v.nombre_apellido?.toLowerCase().includes(searchLower);
     const matchCode = v.codigo_interno?.toString().toLowerCase().includes(searchLower);
@@ -105,7 +106,6 @@ function UploadForm() {
     e.preventDefault();
     setLoading(true);
     
-    // Acá le decimos que envíe "Sí" o "No" explícitamente para el excel
     const payloadToSave = {
       ...formData,
       codigo_interno: formData.codigo_interno ? formData.codigo_interno.toString().replace(/'/g, '').trim() : '',
@@ -148,8 +148,9 @@ function UploadForm() {
       <div className="form-container">
         <h2>Registrar Nuevo Emprendedor</h2>
 
-        <div className="form-group" style={{ marginBottom: '25px', padding: '15px', background: 'var(--arena)', borderRadius: '10px', border: '1px solid var(--terracota)' }}>
-          <label style={{ color: 'var(--texto-principal)', fontWeight: 'bold', fontSize: '14px', marginBottom: '10px' }}>
+        {/* FONDO LILA SUAVE EN LA SELECCIÓN DE FERIA */}
+        <div className="form-group" style={{ marginBottom: '25px', padding: '15px', background: 'var(--lila-muy-claro)', borderRadius: '10px', border: '1px solid var(--lila-oscuro)' }}>
+          <label style={{ color: 'var(--lila-oscuro)', fontWeight: 'bold', fontSize: '14px', marginBottom: '10px' }}>
             📍 ¿PARA QUÉ FERIA ES ESTE INGRESO?
           </label>
           <select 
@@ -161,7 +162,6 @@ function UploadForm() {
           >
             <option value="">-- Seleccionar Feria --</option>
             {ferias.map((f, i) => {
-              // CREAMOS EL STRING CON EL NOMBRE Y LA FECHA COMBINADOS
               const stringFeria = f.fecha ? `${f.nombre_feria} (${new Date(f.fecha).toLocaleDateString('es-AR')})` : f.nombre_feria;
               return (
                 <option key={i} value={stringFeria}>
@@ -173,18 +173,19 @@ function UploadForm() {
         </div>
 
         <div className="autocomplete-wrapper">
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--terracota)', marginBottom: '8px', textTransform: 'uppercase' }}>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--lila-oscuro)', marginBottom: '8px', textTransform: 'uppercase' }}>
             ⚡ Autocompletar (Participante Frecuente)
           </label>
           <input 
             type="text" 
             className="search-input" 
             style={{ marginBottom: '0' }}
-            placeholder="Escribí nombre o código y presioná ENTER..." 
+            placeholder="Seleccioná de la lista o buscá por nombre..." 
             value={searchTerm}
+            onFocus={() => setShowSuggestions(true)} 
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setShowSuggestions(e.target.value.length > 0); 
+              setShowSuggestions(true); 
             }}
             onKeyDown={handleSearchKeyDown} 
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} 
@@ -202,11 +203,6 @@ function UploadForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="custom-form">
-          {formData.codigo_interno && (
-            <div style={{ background: 'var(--bg-tiza)', padding: '12px', borderRadius: '8px', border: '1px solid var(--terracota)', color: 'var(--terracota)', fontWeight: 'bold', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>
-              REUTILIZANDO CÓDIGO: {formData.codigo_interno}
-            </div>
-          )}
 
           <div className="form-group"><label>Nombre y Apellido:</label><input type="text" name="nombre_apellido" value={formData.nombre_apellido} onChange={handleChange} required /></div>
           <div className="form-group"><label>Rubro:</label><input type="text" name="rubro" value={formData.rubro} onChange={handleChange} required /></div>
@@ -227,11 +223,11 @@ function UploadForm() {
           </div>
 
           {formData.lleva_gazebo && (
-            <div className="form-group slide-in" style={{ padding: '15px', background: 'var(--bg-tiza)', borderRadius: '8px', border: '1px solid var(--arena)' }}>
+            <div className="form-group slide-in" style={{ padding: '15px', background: 'var(--lila-muy-claro)', borderRadius: '8px', border: '1px solid var(--lila-claro)' }}>
               <label>Medida del Gazebo:</label>
               <div className="radio-group" style={{ display: 'flex', gap: '15px', marginTop: '8px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'none', fontSize: '15px', color: 'var(--texto-principal)' }}><input type="radio" name="medida_gazebo" value="2x2" checked={formData.medida_gazebo === '2x2'} onChange={handleChange} style={{ width: 'auto' }} /> 2x2</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'none', fontSize: '15px', color: 'var(--texto-principal)' }}><input type="radio" name="medida_gazebo" value="3x3" checked={formData.medida_gazebo === '3x3'} onChange={handleChange} style={{ width: 'auto' }} /> 3x3</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'none', fontSize: '15px', color: 'var(--texto-principal)' }}><input type="radio" name="medida_gazebo" value="2x2" checked={formData.medida_gazebo === '2x2'} onChange={handleChange} /> 2x2</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'none', fontSize: '15px', color: 'var(--texto-principal)' }}><input type="radio" name="medida_gazebo" value="3x3" checked={formData.medida_gazebo === '3x3'} onChange={handleChange} /> 3x3</label>
               </div>
             </div>
           )}
@@ -256,7 +252,7 @@ function UploadForm() {
           {toast.type === 'success' ? (
             <svg width="24" height="24" fill="none" stroke="var(--salvia)" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           ) : (
-            <svg width="24" height="24" fill="none" stroke="var(--terracota)" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <svg width="24" height="24" fill="none" stroke="#e74c3c" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           )}
           <span className="toast-message">{toast.message}</span>
         </div>

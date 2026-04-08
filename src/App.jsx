@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import UploadForm from './components/UploadForm';
 import SearchView from './components/SearchView';
-import FeriaForm from './components/FeriaForm'; // El componente nuevo
-import logo from './feria-logo.png'; // Revisá que la ruta de tu logo sea correcta
+import FeriaForm from './components/FeriaForm';
+import logo from './feria-logo.png'; 
 
 function App() {
   const [activeTab, setActiveTab] = useState('upload');
@@ -10,8 +10,8 @@ function App() {
   return (
     <div className="app-container">
       <header className="app-header">
+        {/* Dejamos solo el logo y eliminamos el <h1 className="app-title"> */}
         <img src={logo} alt="Feria Sol y Luna" className="app-logo" />
-        <h1 className="app-title">Feria Sol y Luna</h1>
         
         <nav className="tab-menu">
           <button 
