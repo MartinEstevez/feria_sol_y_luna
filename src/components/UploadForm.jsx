@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-// 👉 ¡PONÉ TU LINK DE GOOGLE ACÁ!
+// 👉 ¡PONÉ TU LINK DE GOOGLE ACÁ! (Asegurate que sea el mismo en todos los archivos)
 const GAS_URL = "https://script.google.com/macros/s/AKfycbz22ztztD5j7KDI5W21iiNxg-nYtH_NKtSnprw1PCRKOQdGKCBTa84sfq0cAJVsoIWvbg/exec";
 
 const formatCurrency = (val) => {
@@ -37,19 +37,43 @@ function UploadForm() {
   };
 
   useEffect(() => {
-    fetch(GAS_URL)
-      .then(res => res.json())
-      .then(data => {
-        if(Array.isArray(data)) {
-            const uniqueVendors = Array.from(new Map(data.map(item => [item.codigo_interno, item])).values());
-            setPastVendors(uniqueVendors);
-        }
-      }).catch(err => console.error("Error:", err));
+    // --- LÓGICA DE CACHÉ PARA EMPRENDEDORES ---
+    const loadVendors = async () => {
+      const cached = sessionStorage.getItem('vendorsData');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        const uniqueVendors = Array.from(new Map(parsed.map(item => [item.codigo_interno, item])).values());
+        setPastVendors(uniqueVendors);
+      }
 
-    fetch(`${GAS_URL}?type=ferias`)
-      .then(res => res.json())
-      .then(data => { if(Array.isArray(data)) setFerias(data); })
-      .catch(err => console.error("Error ferias:", err));
+      try {
+        const res = await fetch(GAS_URL);
+        const data = await res.json();
+        if(Array.isArray(data)) {
+          sessionStorage.setItem('vendorsData', JSON.stringify(data));
+          const uniqueVendors = Array.from(new Map(data.map(item => [item.codigo_interno, item])).values());
+          setPastVendors(uniqueVendors);
+        }
+      } catch(err) { console.error(err); }
+    };
+
+    // --- LÓGICA DE CACHÉ PARA FERIAS ---
+    const loadFerias = async () => {
+      const cached = sessionStorage.getItem('feriasData');
+      if (cached) setFerias(JSON.parse(cached));
+
+      try {
+        const res = await fetch(`${GAS_URL}?type=ferias`);
+        const data = await res.json();
+        if(Array.isArray(data)) {
+          setFerias(data);
+          sessionStorage.setItem('feriasData', JSON.stringify(data));
+        }
+      } catch(err) { console.error(err); }
+    };
+
+    loadVendors();
+    loadFerias();
   }, []);
 
   const handleChange = (e) => {
@@ -125,6 +149,10 @@ function UploadForm() {
       
       if(result.status === "success") {
         showToast(`¡Registro exitoso!\nCódigo: ${result.codigo}`, 'success');
+        
+        // AL GUARDAR CON ÉXITO, LIMPIAMOS LA MEMORIA PARA QUE LA TABLA SE ACTUALICE
+        sessionStorage.removeItem('vendorsData'); 
+        
         setFormData({
           codigo_interno: '', 
           feria_asignada: formData.feria_asignada, 
@@ -148,7 +176,6 @@ function UploadForm() {
       <div className="form-container">
         <h2>Registrar Nuevo Emprendedor</h2>
 
-        {/* FONDO LILA SUAVE EN LA SELECCIÓN DE FERIA */}
         <div className="form-group" style={{ marginBottom: '25px', padding: '15px', background: 'var(--lila-muy-claro)', borderRadius: '10px', border: '1px solid var(--lila-oscuro)' }}>
           <label style={{ color: 'var(--lila-oscuro)', fontWeight: 'bold', fontSize: '14px', marginBottom: '10px' }}>
             📍 ¿PARA QUÉ FERIA ES ESTE INGRESO?
@@ -174,7 +201,7 @@ function UploadForm() {
 
         <div className="autocomplete-wrapper">
           <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--lila-oscuro)', marginBottom: '8px', textTransform: 'uppercase' }}>
-            ⚡ Autocompletar (Participante Frecuente)
+            ⚡ Buscar emprendedor (por nombre o código interno)
           </label>
           <input 
             type="text" 
@@ -203,7 +230,6 @@ function UploadForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="custom-form">
-
           <div className="form-group"><label>Nombre y Apellido:</label><input type="text" name="nombre_apellido" value={formData.nombre_apellido} onChange={handleChange} required /></div>
           <div className="form-group"><label>Rubro:</label><input type="text" name="rubro" value={formData.rubro} onChange={handleChange} required /></div>
 
@@ -226,8 +252,8 @@ function UploadForm() {
             <div className="form-group slide-in" style={{ padding: '15px', background: 'var(--lila-muy-claro)', borderRadius: '8px', border: '1px solid var(--lila-claro)' }}>
               <label>Medida del Gazebo:</label>
               <div className="radio-group" style={{ display: 'flex', gap: '15px', marginTop: '8px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'none', fontSize: '15px', color: 'var(--texto-principal)' }}><input type="radio" name="medida_gazebo" value="2x2" checked={formData.medida_gazebo === '2x2'} onChange={handleChange} /> 2x2</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'none', fontSize: '15px', color: 'var(--texto-principal)' }}><input type="radio" name="medida_gazebo" value="3x3" checked={formData.medida_gazebo === '3x3'} onChange={handleChange} /> 3x3</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'none', fontSize: '15px', color: 'var(--texto-principal)' }}><input type="radio" name="medida_gazebo" value="2x2" checked={formData.medida_gazebo === '2x2'} onChange={handleChange} style={{ width: 'auto' }} /> 2x2</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px', textTransform: 'none', fontSize: '15px', color: 'var(--texto-principal)' }}><input type="radio" name="medida_gazebo" value="3x3" checked={formData.medida_gazebo === '3x3'} onChange={handleChange} style={{ width: 'auto' }} /> 3x3</label>
               </div>
             </div>
           )}

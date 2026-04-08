@@ -46,7 +46,16 @@ function SearchView() {
   }, []);
 
   const fetchData = async () => {
-    setLoading(true);
+    // 1. CARGAMOS LA CACHÉ INMEDIATAMENTE SI EXISTE
+    const cached = sessionStorage.getItem('vendorsData');
+    if (cached) {
+      setData(JSON.parse(cached));
+    } else {
+      // Solo mostramos "Cargando..." si no hay caché
+      setLoading(true);
+    }
+
+    // 2. PEDIMOS DATOS FRESCOS POR DETRÁS
     try {
       const response = await fetch(GAS_URL);
       const result = await response.json();
@@ -55,6 +64,7 @@ function SearchView() {
         showToast("Error desde Google: " + result.message, 'error');
       } else if (Array.isArray(result)) {
         setData(result);
+        sessionStorage.setItem('vendorsData', JSON.stringify(result));
       }
     } catch (error) {
       showToast("Error de conexión al cargar la tabla.", 'error');
@@ -64,10 +74,16 @@ function SearchView() {
   };
 
   const fetchFerias = async () => {
+    const cached = sessionStorage.getItem('feriasData');
+    if (cached) setFerias(JSON.parse(cached));
+
     try {
       const response = await fetch(`${GAS_URL}?type=ferias`);
       const result = await response.json();
-      if(Array.isArray(result)) setFerias(result);
+      if(Array.isArray(result)) {
+        setFerias(result);
+        sessionStorage.setItem('feriasData', JSON.stringify(result));
+      }
     } catch (error) {
       console.error("Error trayendo ferias:", error);
     }
@@ -117,6 +133,9 @@ function SearchView() {
       });
       showToast("Datos actualizados correctamente", 'success');
       setIsEditing(false);
+      
+      // LIMPIAMOS CACHÉ PORQUE EDITAMOS UN DATO
+      sessionStorage.removeItem('vendorsData');
       fetchData(); 
     } catch (error) {
       showToast("Error al actualizar", 'error');
@@ -136,6 +155,9 @@ function SearchView() {
       });
       showToast("Registro eliminado con éxito", 'success');
       setSelectedRow(null);
+      
+      // LIMPIAMOS CACHÉ PORQUE BORRAMOS UN DATO
+      sessionStorage.removeItem('vendorsData');
       fetchData(); 
     } catch (error) {
       showToast("Error al eliminar el registro", 'error');
@@ -282,7 +304,6 @@ function SearchView() {
                 {processedData.map((item, index) => (
                   <tr key={index} onClick={() => handleRowClick(item)} className={selectedRow?.row_index === item.row_index ? 'selected' : ''}>
                     <td data-label="Fecha">{formatDate(item.fecha_registro || item.Fecha)}</td>
-                    {/* LA FERIA AHORA APARECE EN LILA OSCURO */}
                     <td data-label="Feria" style={{fontWeight: 'bold', color: 'var(--lila-oscuro)'}}>{item.feria_asignada || '-'}</td>
                     <td data-label="Cód.">{item.codigo_interno}</td>
                     <td data-label="Nombre" className="table-name">{item.nombre_apellido}</td>
