@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
-// URL DEFINITIVA
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxBgYBdMd4uIU5ee0TbNZWH0Pd8cdSrZS07x_xNu21EI8D8CS67KEV-GlZSyLsxSeaHSQ/exec"; 
+// PONÉ LA NUEVA URL DE GOOGLE ACÁ ABAJO 👇
+const GAS_URL = "https://script.google.com/macros/s/AKfycbz22ztztD5j7KDI5W21iiNxg-nYtH_NKtSnprw1PCRKOQdGKCBTa84sfq0cAJVsoIWvbg/exec"; 
 
 const formatCurrency = (val) => {
   if (!val) return '';
@@ -12,7 +12,7 @@ const formatCurrency = (val) => {
 function UploadForm() {
   const [formData, setFormData] = useState({
     codigo_interno: '', 
-    feria_asignada: '', // NUEVO CAMPO
+    feria_asignada: '', 
     nombre_apellido: '', 
     rubro: '', 
     opcion_elegida: '',
@@ -26,7 +26,7 @@ function UploadForm() {
   
   const [loading, setLoading] = useState(false);
   const [pastVendors, setPastVendors] = useState([]);
-  const [ferias, setFerias] = useState([]); // ESTADO PARA LAS FERIAS
+  const [ferias, setFerias] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [toast, setToast] = useState(null);
@@ -37,22 +37,19 @@ function UploadForm() {
   };
 
   useEffect(() => {
-    // 1. Traer historial de emprendedores
     fetch(GAS_URL)
       .then(res => res.json())
       .then(data => {
-        const uniqueVendors = Array.from(new Map(data.map(item => [item.codigo_interno, item])).values());
-        setPastVendors(uniqueVendors);
-      })
-      .catch(err => console.error("Error trayendo historial:", err));
+        if(Array.isArray(data)) {
+            const uniqueVendors = Array.from(new Map(data.map(item => [item.codigo_interno, item])).values());
+            setPastVendors(uniqueVendors);
+        }
+      }).catch(err => console.error("Error:", err));
 
-    // 2. Traer las ferias configuradas
     fetch(`${GAS_URL}?type=ferias`)
       .then(res => res.json())
-      .then(data => {
-        if(Array.isArray(data)) setFerias(data);
-      })
-      .catch(err => console.error("Error trayendo ferias:", err));
+      .then(data => { if(Array.isArray(data)) setFerias(data); })
+      .catch(err => console.error("Error ferias:", err));
   }, []);
 
   const handleChange = (e) => {
@@ -76,7 +73,7 @@ function UploadForm() {
       nombre_apellido: vendor.nombre_apellido || '',
       rubro: vendor.rubro || '',
       opcion_elegida: vendor.opcion_elegida || '',
-      lleva_gazebo: !!vendor.medida_gazebo,
+      lleva_gazebo: vendor.lleva_gazebo === 'Sí' || !!vendor.medida_gazebo,
       medida_gazebo: vendor.medida_gazebo || '',
       instagram: vendor.instagram || '',
       valor_total: '',
@@ -100,9 +97,7 @@ function UploadForm() {
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault(); 
-      if (showSuggestions && filteredVendors.length > 0) {
-        handleSelectVendor(filteredVendors[0]); 
-      }
+      if (showSuggestions && filteredVendors.length > 0) handleSelectVendor(filteredVendors[0]); 
     }
   };
 
@@ -110,11 +105,13 @@ function UploadForm() {
     e.preventDefault();
     setLoading(true);
     
+    // Acá le decimos que envíe "Sí" o "No" explícitamente para el excel
     const payloadToSave = {
       ...formData,
       codigo_interno: formData.codigo_interno ? formData.codigo_interno.toString().replace(/'/g, '').trim() : '',
       valor_total: Number(formData.valor_total.toString().replace(/\./g, '')),
-      sena: Number(formData.sena.toString().replace(/\./g, ''))
+      sena: Number(formData.sena.toString().replace(/\./g, '')),
+      lleva_gazebo: formData.lleva_gazebo ? "Sí" : "No"
     };
 
     try {
@@ -130,7 +127,7 @@ function UploadForm() {
         showToast(`¡Registro exitoso!\nCódigo: ${result.codigo}`, 'success');
         setFormData({
           codigo_interno: '', 
-          feria_asignada: formData.feria_asignada, // Mantenemos la feria seleccionada para hacer más rápida la carga
+          feria_asignada: formData.feria_asignada, 
           nombre_apellido: '', rubro: '', opcion_elegida: '',
           lleva_gazebo: false, medida_gazebo: '', valor_total: '', sena: '',
           pago_completo: false, instagram: ''
@@ -151,7 +148,6 @@ function UploadForm() {
       <div className="form-container">
         <h2>Registrar Nuevo Emprendedor</h2>
 
-        {/* --- SELECTOR DE FERIAS --- */}
         <div className="form-group" style={{ marginBottom: '25px', padding: '15px', background: 'var(--arena)', borderRadius: '10px', border: '1px solid var(--terracota)' }}>
           <label style={{ color: 'var(--texto-principal)', fontWeight: 'bold', fontSize: '14px', marginBottom: '10px' }}>
             📍 ¿PARA QUÉ FERIA ES ESTE INGRESO?
@@ -164,15 +160,18 @@ function UploadForm() {
             style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 'bold' }}
           >
             <option value="">-- Seleccionar Feria --</option>
-            {ferias.map((f, i) => (
-              <option key={i} value={f.nombre_feria}>
-                {f.nombre_feria} {f.fecha ? `(${new Date(f.fecha).toLocaleDateString('es-AR')})` : ''}
-              </option>
-            ))}
+            {ferias.map((f, i) => {
+              // CREAMOS EL STRING CON EL NOMBRE Y LA FECHA COMBINADOS
+              const stringFeria = f.fecha ? `${f.nombre_feria} (${new Date(f.fecha).toLocaleDateString('es-AR')})` : f.nombre_feria;
+              return (
+                <option key={i} value={stringFeria}>
+                  {stringFeria}
+                </option>
+              )
+            })}
           </select>
         </div>
 
-        {/* --- AUTOCOMPLETADO --- */}
         <div className="autocomplete-wrapper">
           <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--terracota)', marginBottom: '8px', textTransform: 'uppercase' }}>
             ⚡ Autocompletar (Participante Frecuente)
@@ -193,7 +192,7 @@ function UploadForm() {
           {showSuggestions && filteredVendors.length > 0 && (
             <div className="autocomplete-dropdown">
               {filteredVendors.map((vendor, idx) => (
-                <div key={idx} className="autocomplete-item" onClick={() => handleSelectVendor(vendor)}>
+                <div key={idx} className="autocomplete-item" onMouseDown={() => handleSelectVendor(vendor)}>
                   <strong>{vendor.nombre_apellido}</strong>
                   <span style={{ color: 'var(--texto-secundario)' }}>Cód: {vendor.codigo_interno} | Rubro: {vendor.rubro}</span>
                 </div>

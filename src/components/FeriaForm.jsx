@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-// IMPORTANTE: Asegurate de que esta sea tu URL más reciente
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxBgYBdMd4uIU5ee0TbNZWH0Pd8cdSrZS07x_xNu21EI8D8CS67KEV-GlZSyLsxSeaHSQ/exec";
+// IMPORTANTE: Esta es la URL que venimos usando
+const GAS_URL = "https://script.google.com/macros/s/AKfycbz22ztztD5j7KDI5W21iiNxg-nYtH_NKtSnprw1PCRKOQdGKCBTa84sfq0cAJVsoIWvbg/exec";
 
 function FeriaForm() {
   const [formData, setFormData] = useState({ nombre_feria: '', ubicacion: '', fecha: '' });
@@ -16,6 +16,11 @@ function FeriaForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
+    // --- INICIO MODO DEBUG ---
+    console.log("1. Intentando enviar a URL:", GAS_URL);
+    console.log("2. Datos a enviar:", { ...formData, action: 'add_feria' });
+
     try {
       const response = await fetch(GAS_URL, {
         method: 'POST',
@@ -23,20 +28,33 @@ function FeriaForm() {
         body: JSON.stringify({ ...formData, action: 'add_feria' })
       });
       
-      const result = await response.json();
+      console.log("3. Fetch completado. Estado HTTP:", response.status);
+
+      // DEPURACIÓN: Leemos la respuesta como TEXTO CRUDO
+      const rawText = await response.text();
+      console.log("4. RESPUESTA CRUDA DEL SERVIDOR:", rawText);
       
-      if (result.status === "success") {
-        showToast("¡Feria configurada con éxito!", 'success');
-        setFormData({ nombre_feria: '', ubicacion: '', fecha: '' });
-      } else {
-        showToast("Hubo un error al guardar la feria.", 'error');
+      // Intentamos convertir ese texto a JSON
+      try {
+        const result = JSON.parse(rawText);
+        if (result.status === "success") {
+          showToast("¡Feria configurada con éxito!", 'success');
+          setFormData({ nombre_feria: '', ubicacion: '', fecha: '' });
+        } else {
+          showToast("Error reportado por el servidor: " + result.message, 'error');
+        }
+      } catch (parseError) {
+        console.error("Error al convertir a JSON. El servidor no devolvió JSON válido.", parseError);
+        alert("El servidor devolvió algo inesperado. Revisá la consola (F12).");
       }
+      
     } catch (error) {
-      console.error(error);
-      showToast("Error de conexión. ¿Actualizaste el Script a una Nueva Versión?", 'error');
+      console.error("❌ ERROR DETECTADO POR EL CATCH:", error);
+      alert("¡Ocurrió el error de conexión! Abrí la consola (F12) para ver los detalles.");
     } finally { 
       setLoading(false); 
     }
+    // --- FIN MODO DEBUG ---
   };
 
   return (

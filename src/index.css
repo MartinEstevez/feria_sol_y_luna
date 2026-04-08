@@ -206,6 +206,25 @@ h2 {
 .badge-success { background-color: rgba(142, 155, 138, 0.15); color: var(--salvia); }
 .badge-warning { background-color: rgba(216, 176, 106, 0.15); color: var(--mostaza); }
 
+/* --- NUEVO: FONDO OSCURO QUE CUBRE LA PANTALLA --- */
+.panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(58, 49, 43, 0.5); /* Color marrón oscuro semi-transparente */
+  backdrop-filter: blur(3px); /* Desenfoque elegante */
+  z-index: 9999;
+  animation: fadeInOverlay 0.3s ease forwards;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* --- PANEL LATERAL FLOTANTE --- */
 .details-panel { display: none; }
 
 .details-panel.open {
@@ -215,13 +234,14 @@ h2 {
   top: 0;
   right: 0;
   width: 100%; 
-  height: 100%;
+  height: 100vh;
   background-color: var(--bg-card);
-  z-index: 1000;
+  z-index: 10000;
   padding: 40px 30px;
   box-sizing: border-box;
   animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   overflow-y: auto;
+  box-shadow: -10px 0 40px rgba(0,0,0,0.15); /* Sombra intensa para separar del fondo */
 }
 
 .details-panel h3 {
@@ -290,7 +310,8 @@ h2 {
 
 .custom-form input[type="text"], 
 .custom-form input[type="number"], 
-.custom-form select {
+.custom-form select,
+.custom-form input[type="date"] {
   width: 100%;
   background-color: var(--bg-tiza);
   color: var(--texto-principal);
@@ -424,7 +445,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 15px;
-  z-index: 9999;
+  z-index: 99999;
   animation: slideInBottom 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -456,7 +477,7 @@ h2 {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10000;
+  z-index: 100000;
   backdrop-filter: blur(4px);
 }
 
@@ -516,7 +537,9 @@ h2 {
   to { transform: scale(1); opacity: 1; }
 }
 
-/* LA MAGIA PARA COMPUTADORAS (Desktop) */
+/* =========================================
+   LA MAGIA PARA COMPUTADORAS (Desktop) 
+   ========================================= */
 @media (min-width: 800px) {
   .app-container { max-width: 1300px; padding: 40px 20px; }
   .app-header { margin-bottom: 50px; }
@@ -528,28 +551,10 @@ h2 {
     border-radius: 20px; 
     padding: 40px 35px; 
   }
-  
-  .search-container.panel-open {
-    display: grid;
-    grid-template-columns: 1fr 440px; 
-    grid-template-rows: max-content max-content 1fr;
-    grid-template-areas:
-      "title panel"
-      "search panel"
-      "table panel";
-    column-gap: 30px;
-    align-items: start; 
-  }
-
-  .search-container.panel-open > h2 { grid-area: title; margin-bottom: 20px; margin-top: 0;}
-  .search-container.panel-open > .search-input { grid-area: search; margin-bottom: 20px; }
-  .search-container.panel-open > .table-responsive,
-  .search-container.panel-open > .loading-text { 
-    grid-area: table; 
-  }
 
   h2 { font-size: 26px; margin-bottom: 30px; }
 
+  /* LA TABLA AHORA OCUPA EL 100% SIEMPRE */
   .data-table { display: table; }
   .data-table thead { display: table-header-group; }
   .data-table tbody { display: table-row-group; }
@@ -567,21 +572,11 @@ h2 {
 
   .form-row { flex-direction: row; gap: 20px; }
   
+  /* PANEL LATERAL FIJO A LA DERECHA (TIPO DRAWER) */
   .details-panel.open { 
-    grid-area: panel;
-    position: relative; 
-    width: auto;
-    height: 100%;
-    padding: 0 0 0 30px;
-    background: transparent;
+    width: 480px; 
+    padding: 50px 40px; 
     border-left: 1px solid var(--arena);
-    overflow: visible; 
-    animation: fadeInRight 0.4s ease forwards;
-  }
-
-  .details-panel-sticky {
-    position: sticky;
-    top: 40px; 
   }
   
   .custom-form { gap: 20px; }
@@ -589,6 +584,6 @@ h2 {
 }
 
 @keyframes fadeInRight {
-  from { opacity: 0; transform: translateX(20px); }
+  from { opacity: 0; transform: translateX(100%); }
   to { opacity: 1; transform: none; }
 }
